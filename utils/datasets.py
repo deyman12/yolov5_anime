@@ -84,8 +84,16 @@ class LoadImages:  # for inference
         else:
             raise Exception('ERROR: %s does not exist' % p)
 
-        images = [x for x in files if os.path.splitext(x)[-1].lower() in img_formats]
-        videos = [x for x in files if os.path.splitext(x)[-1].lower() in vid_formats]
+        images = [r"{}{}{}".format(
+            os.path.dirname(x), 
+            os.sep, 
+            os.path.basename(x)
+        ) for x in files if os.path.splitext(x)[-1].lower() in img_formats]
+        videos = [r"{}{}{}".format(
+            os.path.dirname(x),
+            os.sep,
+            os.path.basename(x)
+        ) for x in files if os.path.splitext(x)[-1].lower() in vid_formats]
         ni, nv = len(images), len(videos)
 
         self.img_size = img_size
@@ -129,7 +137,8 @@ class LoadImages:  # for inference
         else:
             # Read image
             self.count += 1
-            img0 = cv2.imread(path)  # BGR
+            # img0 = cv2.imread(path)  # BGR
+            img0 = cv2.imdecode(np.fromfile(path, np.uint8), cv2.IMREAD_COLOR)  # BGR
             assert img0 is not None, 'Image Not Found ' + path
             print('image %g/%g %s: ' % (self.count, self.nf, path), end='')
 
