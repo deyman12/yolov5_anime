@@ -1,0 +1,10 @@
+AsumiSena/
+weights/*.pt
+weights/*.pth
+trash/
+test*
+inference/output/*
+inference/images/*
+inference/local_img/*
+models/__pycache__
+utils/__pycache__
