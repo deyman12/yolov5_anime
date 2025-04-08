@@ -102,9 +102,10 @@ Python 3.8 or later with all [requirements.txt](https://github.com/zymk9/yolov5_
 
   ![sample](AsumiSena/cropped/upscaled/effects/mayfair-crop_社員_新衣装あしゅみ_99628411_p0.png)
 
-```
-Thanks to the author who made this and trained the model for dozens of hours. honestly, i developed this because i have hundreds of accounts where i often change the profile pictures, and it's super tiring since i always have to align the face just right every time. this repo really helps me out, so thank you again. much respect. – man of culture
-```
+Thanks to the author who made this and trained the model for dozens of hours. honestly,
+i developed this because i have hundreds of accounts where i often change the profile pictures,
+and it's super tiring since i always have to align the face just right every time. this repo
+really helps me out, so thank you again. much respect. – man of culture
 
 ## Demo
 
