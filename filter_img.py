@@ -86,7 +86,8 @@ def upscale(
     except Exception as e:
       logging.error(f"{Fore.RED}Error upscaling image: {image} - {e}{Fore.RESET}")
       return
-  logging.warning(f"{Fore.YELLOW}Image path not found: {image}{Fore.RESET}")
+  else:
+    logging.warning(f"{Fore.YELLOW}Image path not found: {image}{Fore.RESET}")
   return
 
 def bulk_set(
