@@ -9,8 +9,9 @@ import subprocess
 from PIL import Image
 from colorama.ansi import Fore
 from argparse import ArgumentParser, RawTextHelpFormatter
-
+from io import BytesIO
 import logging
+import re
 logging.basicConfig(level=logging.INFO)
 
 def set_filter(image: str) -> None:
@@ -30,7 +31,11 @@ def set_filter(image: str) -> None:
   logging.info(f"Image filtered and saved to {filter_out}")
   return
 
-def set_resize(image:str, quality: int = 90) -> None:
+def set_resize(
+  image:str, 
+  quality: int = 95, 
+  minsize: int = 0
+) -> None:
   """PNG format is to large
 
   :param str image: image path
@@ -40,27 +45,70 @@ def set_resize(image:str, quality: int = 90) -> None:
     os.path.dirname(image),
     'resized'
   )
-  if image.endswith('.png'):
-    img = Image.open(image).convert("RGB")
-    if not os.path.exists(outp):
-      os.makedirs(outp, exist_ok=True)
+  if not os.path.exists(outp):
+    os.makedirs(outp, exist_ok=True)
+  
+  if minsize:
+    if os.path.getsize(image) <= minsize:
+      logging.info(f"{Fore.YELLOW}Image is already smaller than {minsize} bytes: {image}{Fore.RESET}")
+      shutil.copy(
+        image, outp
+      )
+      logging.info(f"{Fore.GREEN}Image copied to {outp}{Fore.RESET}")
+      return
     
-    img.save(
-      os.path.join(
-        outp,
-        f"resize-{os.path.splitext(os.path.basename(image))[0]}.jpg"
-      ),
-      "JPEG",
-      quality=quality
+    ratio = 0.9 # 10%
+    at = 0
+    buffer = BytesIO()
+    while at < 5:
+      buffer.seek(0)
+      img = Image.open(image).convert("RGB")
+      img.save(buffer, "JPEG", quality=quality)
+      size_now = buffer.tell()
+      
+      if size_now <= minsize:
+        buffer.seek(0)
+        img = Image.open(buffer)
+        outpfile = f"{outp}/resize-{os.path.splitext(os.path.basename(image))[0]}.jpg"
+        img.save(
+          outpfile,
+          "JPEG",
+          quality=quality
+        )
+        logging.info(f"Image resized and saved to {outpfile}")
+        return
+      
+      w,h = img.size
+      img =  img.resize(
+        (int(w * ratio), int(h * ratio)),
+      )
+      quality = max(50, quality - 10) # reduce quality till 50% is not god idea
+      at += 1
+    
+    buffer.seek(0)
+    return Image.open(buffer)
+  else:
+    if image.endswith('.png'):
+      img = Image.open(image).convert("RGB")
+      if not os.path.exists(outp):
+        os.makedirs(outp, exist_ok=True)
+      
+      img.save(
+        os.path.join(
+          outp,
+          f"resize-{os.path.splitext(os.path.basename(image))[0]}.jpg"
+        ),
+        "JPEG",
+        quality=quality
+      )
+      logging.info(f"Image converted and saved to {outp}")
+      return
+    logging.warning(f"{Fore.YELLOW}Image format not supported for conversion: {image}{Fore.RESET}")
+    shutil.copy(
+      image, outp
     )
-    logging.info(f"Image converted and saved to {outp}")
+    logging.info(f"{Fore.GREEN}Image copied to {outp}{Fore.RESET}")
     return
-  logging.warning(f"{Fore.YELLOW}Image format not supported for conversion: {image}{Fore.RESET}")
-  shutil.move(
-    image, outp
-  )
-  logging.info(f"{Fore.GREEN}Image moved to {outp}{Fore.RESET}")
-  return
 
 def upscale(
   image: str,
@@ -90,15 +138,39 @@ def upscale(
     logging.warning(f"{Fore.YELLOW}Image path not found: {image}{Fore.RESET}")
   return
 
+def parse_minsize(minsize: str) -> int:
+  """parse minimum size
+
+  :param str minsize: minimum size
+  :raises ValueError: invalid minimum size
+  :return int: minimum size in bytes
+  """
+  minsize = minsize.strip().upper()
+  units = {
+    "B": 1,
+    "KB": 1024,
+    "MB": 1024 ** 2,
+    "GB": 1024 ** 3
+  }
+  m = re.match(r"^\s*([\d.]+)\s*(B|KB|MB|GB)\s*$", minsize.strip(), re.IGNORECASE)  
+  if not m:
+    raise ValueError(f"Invalid minimum size: {minsize}")
+  
+  v,u = m.groups()
+  return int(float(v) * units[u.upper()])
+
 def bulk_set(
   orig_target: str,
-  execute: str = 'filter'
+  execute: str = 'filter',
+  minsize: str = '1MB'
 ) -> None:
   """bulk filter/resize images in directory
 
   :param str orig_target: targetr directory
   :return: None
   """
+  if minsize: 
+    minsize = parse_minsize(minsize)
   if os.path.isdir(orig_target):
     if execute == 'upscale':
       upscale(orig_target)
@@ -112,7 +184,10 @@ def bulk_set(
       try:
         logging.info(f"Processing [{execute}] image {i} of {len(img_list)}: {image}")
         if execute == 'resize':
-          set_resize(f"{orig_target}/{image}")
+          set_resize(
+            f"{orig_target}/{image}",
+            minsize=minsize
+          )
         elif execute == 'filter':
           set_filter(
             f"{orig_target}/{image}"
@@ -132,6 +207,14 @@ if __name__ == "__main__":
     help="Directory containing images to filter/resize",
     metavar=""
   )
+  
+  parser.add_argument(
+    "-m", "--minsize", 
+    type=str,
+    help="Set minimum size to be resized, if <img_size> >= <minsize>,\nthen it will be resized until the size < <minsize>. e.g:[1KB, 1MB, 1GB]",
+    metavar=""
+  )
+  
   parser.add_argument(
     "-e", "--execute",
     type=str,
@@ -145,7 +228,7 @@ if __name__ == "__main__":
     parser.print_help()
     exit(1)
   
-  bulk_set(args.directory, args.execute)
+  bulk_set(args.directory, args.execute, args.minsize)
 
 # bulk_filter(
 #   "./AsumiSena/cropped"
