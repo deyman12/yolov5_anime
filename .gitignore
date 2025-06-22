@@ -8,3 +8,4 @@ inference/local_img/*
 models/__pycache__
 utils/__pycache__
 realesrgan*
+pp/*
