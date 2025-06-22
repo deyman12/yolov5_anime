@@ -58,9 +58,10 @@ Python 3.8 or later with all [requirements.txt](https://github.com/zymk9/yolov5_
 6. Check and resize PNG to JPG (for upscale)
 
    if images file's already in JPG format, it will be moved in resized folder.
+   but, if you call with `--minsize` it will be resized image untill image size less than `<minsize>`
 
    ```
-   python filter_img.py --directory <orig_folder>/cropped --execute resize
+   python filter_img.py --directory <orig_folder>/cropped --execute resize --minsize 1MB
    ```
 
 7. Upscale using [REAL-ESRGAN](https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.3.0)
@@ -87,20 +88,13 @@ Python 3.8 or later with all [requirements.txt](https://github.com/zymk9/yolov5_
 
 ### Showcase
 
-- crop with 50% margin:
+| Description | Origin | Image |
+|-------------|--------|-------|
+| Crop with 50% margin | [セナちゃん誕生日](https://www.pixiv.net/en/artworks/95598956) by [とき](https://www.pixiv.net/en/users/14380777) | <img src="AsumiSena/cropped/crop_とき_セナちゃん誕生日_95598956_p0.png" width="150"/> |
+| Crop with 50% margin | [新衣装あしゅみ](https://www.pixiv.net/en/artworks/99628411) by [社員](https://www.pixiv.net/en/users/55554885) | <img src="AsumiSena/cropped/crop_社員_新衣装あしゅみ_99628411_p0.jpg" width="150"/> |
+| Upscaled with filter `mayfair` & `saturation 1.5` | [セナちゃん誕生日](https://www.pixiv.net/en/artworks/95598956) by [とき](https://www.pixiv.net/en/users/14380777) | <img src="AsumiSena/cropped/upscaled/effects/mayfair-resize-crop_とき_セナちゃん誕生日_95598956_p0.png" width="150"/> |
+| Upscaled with filter `mayfair` & `saturation 1.5` | [新衣装あしゅみ](https://www.pixiv.net/en/artworks/99628411) by [社員](https://www.pixiv.net/en/users/55554885) | <img src="AsumiSena/cropped/upscaled/effects/mayfair-crop_社員_新衣装あしゅみ_99628411_p0.png" width="150"/> |
 
-  origin: [セナちゃん誕生日](https://www.pixiv.net/en/artworks/95598956) by [とき](https://www.pixiv.net/en/users/14380777)
-
-  ![sample](AsumiSena/cropped/crop_とき_セナちゃん誕生日_95598956_p0.png)
-  origin: [新衣装あしゅみ](https://www.pixiv.net/en/artworks/99628411) by [社員](https://www.pixiv.net/en/users/55554885)
-
-  ![sample](AsumiSena/cropped/crop_社員_新衣装あしゅみ_99628411_p0.jpg)
-
-- upscaled with filter `myfair` & `saturation 1.5`:
-
-  ![sample](AsumiSena/cropped/upscaled/effects/mayfair-resize-crop_とき_セナちゃん誕生日_95598956_p0.png)
-
-  ![sample](AsumiSena/cropped/upscaled/effects/mayfair-crop_社員_新衣装あしゅみ_99628411_p0.png)
 
 Thanks to the author who made this and trained the model for dozens of hours. honestly,
 i developed this because i have hundreds of accounts where i often change the profile pictures,
